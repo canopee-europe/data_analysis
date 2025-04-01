@@ -1,6 +1,8 @@
+import multiprocessing
 import time
 from datetime import timedelta
 
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 
@@ -35,8 +37,11 @@ def select_date(driver, date):
 
 def validate_selection(driver):
     submit_button = driver.find_element(By.NAME, "btnGo")
-    submit_button.click()
-    time.sleep(2)
+    try:
+        if submit_button:
+            submit_button.click()
+    except:
+        print("Bouton de validation non trouvé, passage à la date suivante.")
 
 
 def read_table(driver, date, data_collected):
@@ -67,8 +72,41 @@ def read_table(driver, date, data_collected):
                             percent_change = cols[3].text.strip()
 
                             data_collected.append((date, currency, exchange_rate, usd_equivalent, percent_change))
-
             else:
                 print("Cette table n'est pas la table des données. Passage à la table suivante.")
     except Exception as e:
         print(e)
+
+
+def get_data_by_date(dates):
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+
+    driver = webdriver.Chrome(options=options)
+    driver.get("https://www.imf.org/external/np/fin/data/rms_sdrv.aspx")
+
+    data_collected = []
+
+    for date in dates:
+        select_date(driver, date)
+        validate_selection(driver)
+        read_table(driver, date, data_collected)
+
+    # Fermer le navigateur à la fin
+    driver.quit()
+    return data_collected
+
+
+def parallel_scraping(start_date, end_date, num_processes):
+    dates = list(generate_dates(start_date, end_date))
+    chunk_size = len(dates) // num_processes
+    date_chunks = [dates[i:i + chunk_size] for i in range(0, len(dates), chunk_size)]
+
+    with multiprocessing.Pool(num_processes) as pool:
+        results = pool.map(get_data_by_date, date_chunks)
+
+    final_data = []
+    for result in results:
+        final_data.append(result)
+
+    return final_data
