@@ -94,14 +94,19 @@ def get_data_by_date(dates):
         validate_selection(driver)
         read_table(driver, date, data_collected)
 
-    # Fermer le navigateur à la fin
+    # Close browser
     driver.quit()
     return data_collected
 
 
 def parallel_scraping(start_date, end_date, num_processes):
     dates = list(generate_dates(start_date, end_date))
-    chunk_size = len(dates) // num_processes
+
+    if len(dates) < num_processes:
+        chunk_size = 1  # Si le nombre de dates est inférieur au nombre de processus, traiter chaque date séparément
+    else:
+        chunk_size = len(dates) // num_processes
+
     date_chunks = [dates[i:i + chunk_size] for i in range(0, len(dates), chunk_size)]
 
     with multiprocessing.Pool(num_processes) as pool:

@@ -1,7 +1,9 @@
 import pickle
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pandas as pd
+from pandas import DataFrame
+from pandas.core.interchange.dataframe_protocol import DataFrame
 from selenium import webdriver
 
 from economics.SDR.models.CurrencyData import CurrencyData
@@ -10,25 +12,41 @@ from economics.SDR.storage.operations import generate_dates, select_date, valida
 
 
 def main():
-    start_date: datetime = datetime(1981, 1, 1)
-    # end_date: datetime = datetime(1981, 2, 1)
-    end_date = datetime.today()
+    file: str = "data/imf_exchange_rates_brut.csv"
 
-    data_collected: list = parallel_scraping(start_date, end_date, 8)
+    df = pd.read_csv(file)
 
-    print("Données récupérées : ", data_collected)
-    return data_collected
+    df["Date"] = pd.to_datetime(df["Date"])
+
+    # Get last date of df
+    last_row = df.tail(1)
+    last_date = last_row['Date'].iloc[0].date()
+
+    # Set today's date
+    today = datetime.today().date()
+
+    print(last_date)
+    print(today)
+
+    # Launch program condition
+    if last_date < today:
+        next_date = last_date + timedelta(days=1)
+
+        data_collected = parallel_scraping(next_date, today, 4)
+
+        # Add new lines to df
+        new_data = pd.DataFrame(data_collected,
+                                columns=["Date", "Currency", "Currency Amount", "Exchange Rate", "USD Equivalent"])
+
+        df_concat = pd.concat([df, new_data], ignore_index=True)
+
+        # Save to .csv file
+        df_concat.to_csv(file, index=False)
+
+    else:
+        print("Les données sont déjà à jour.")
 
 
 if __name__ == "__main__":
-    data_collected = main()
+    main()
 
-    columns = ["Date", "Currency", "Exchange Rate", "USD Equivalent", "Percent Change"]
-
-    # Créer le DataFrame à partir de data_collected
-    df = pd.DataFrame(data_collected, columns=columns)
-
-    # Sauvegarder le DataFrame en CSV
-    df.to_csv("imf_exchange_rates.csv", index=False, encoding="utf-8")
-
-    print("Les données ont été enregistrées dans 'imf_exchange_rates.csv'")
