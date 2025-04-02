@@ -1,3 +1,4 @@
+import csv
 import multiprocessing
 import time
 from datetime import timedelta
@@ -72,6 +73,7 @@ def read_table(driver, date, data_collected):
                             percent_change = cols[3].text.strip()
 
                             data_collected.append((date, currency, exchange_rate, usd_equivalent, percent_change))
+                break
             else:
                 print("Cette table n'est pas la table des données. Passage à la table suivante.")
     except Exception as e:
@@ -105,8 +107,6 @@ def parallel_scraping(start_date, end_date, num_processes):
     with multiprocessing.Pool(num_processes) as pool:
         results = pool.map(get_data_by_date, date_chunks)
 
-    final_data = []
-    for result in results:
-        final_data.append(result)
-
+    final_data = [item for sublist in results for item in sublist]
     return final_data
+
