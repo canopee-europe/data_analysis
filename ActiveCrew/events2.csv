@@ -1,4 +1,4 @@
-name,annee,ville,Pays,population
+﻿name,annee,ville,pays,population
 Marathon du lac d'Annecy,2025,Annecy,France,7825
 Tabasco party,2025,T,France,19648
 Marathon de Bordeaux,2025,Bordeaux,France,11004
@@ -51,3 +51,4 @@ Marathon de Grenoble,2030,Grenoble,France,19157
 Marathon de Lyon,2030,Lyon,France,15823
 Marathon de Nantes,2030,Nantes,France,8297
 Marathon de Genève,2030,Genève,France,16703
+
