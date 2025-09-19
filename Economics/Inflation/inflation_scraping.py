@@ -5,7 +5,6 @@ import re
 
 
 def main():
-
     # Configure browser options
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
@@ -14,7 +13,6 @@ def main():
     driver = webdriver.Chrome(options=options)
     url: str = "https://www.global-rates.com/fr/inflation/historique/"
     driver.get(url)
-
 
     # Find links to pages to scrap
     url_links: list[WebElement] = driver.find_elements(By.XPATH, "//a[contains(@href, 'inflation/historique')]")
@@ -25,15 +23,12 @@ def main():
     for link in url_links:
         urls_storage.append(link.get_attribute("href"))
 
-
-
     # Set browser
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     driver_2 = webdriver.Chrome(options=options)
 
     dict_inflation = {}
-
 
     for url in urls_storage:
         driver_2.get(url)
@@ -54,7 +49,6 @@ def main():
     print(dict_inflation)
 
     driver_2.quit()
-
 
 
 if __name__ == "__main__":
